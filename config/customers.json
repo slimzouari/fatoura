@@ -1,0 +1,27 @@
+[
+  {
+    "id": "CUST001",
+    "name": "ABC Tech Solutions",
+    "address": "Hoofdstraat 123, 1000 AB Amsterdam",
+    "email": "contact@abctech.nl",
+    "contractNumber": "CT-2024-001",
+    "rule": "omzet",
+    "currency": "EUR"
+  },
+  {
+    "id": "CUST002", 
+    "name": "Digital Marketing Pro",
+    "email": "info@digitalmarketing.nl",
+    "rule": "hourly",
+    "currency": "EUR"
+  },
+  {
+    "id": "CUST003",
+    "name": "Innovate StartUp BV",
+    "address": "Technologiepark 45, 2628 XJ Delft",
+    "email": "hello@innovatestartup.nl",
+    "contractNumber": "IN-2024-789",
+    "rule": "omzet",
+    "currency": "EUR"
+  }
+]

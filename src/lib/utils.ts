@@ -3,6 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 
 const CONFIG_DIR = path.join(process.cwd(), 'config');
+const STORAGE_DIR = path.join(process.cwd(), 'storage', 'factuur');
 
 export async function getCustomers(): Promise<Customer[]> {
   try {
@@ -24,6 +25,17 @@ export async function getUser(): Promise<User | null> {
     console.error('Error reading user config:', error);
     return null;
   }
+}
+
+export async function getCustomerById(id: string): Promise<Customer | null> {
+  const customers = await getCustomers();
+  return customers.find(customer => customer.id === id) || null;
+}
+
+export async function ensurePdfDirectory(customerId: string, year: number): Promise<string> {
+  const dirPath = path.join(STORAGE_DIR, year.toString(), customerId);
+  await fs.mkdir(dirPath, { recursive: true });
+  return dirPath;
 }
 
 export function generateInvoiceNumber(customerId: string, year: number, month: number): string {
@@ -63,4 +75,8 @@ export function calculateHourlyTotal(duration: string, ratePerHour: number): num
   const [hours, minutes] = duration.split(':').map(Number);
   const totalHours = hours + (minutes / 60);
   return Math.round(totalHours * ratePerHour * 100) / 100; // Round to 2 decimal places
+}
+
+export function generateUniqueId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2);
 }
