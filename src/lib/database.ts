@@ -142,9 +142,16 @@ class DatabaseClient {
         compensation_amount, duration, rate_per_hour, total) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        lineItem.id, lineItem.invoiceId, lineItem.date, lineItem.description,
-        lineItem.dailyRevenue, lineItem.compensationPercentage, lineItem.compensationAmount,
-        lineItem.duration, lineItem.ratePerHour, lineItem.total
+        lineItem.id, 
+        lineItem.invoiceId, 
+        lineItem.date, 
+        lineItem.description || null,
+        lineItem.dailyRevenue || null, 
+        lineItem.compensationPercentage || null, 
+        lineItem.compensationAmount || null,
+        lineItem.duration || null, 
+        lineItem.ratePerHour || null, 
+        lineItem.total
       ]
     );
   }
