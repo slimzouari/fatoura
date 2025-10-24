@@ -23,15 +23,24 @@
 - [x] Test complete CRUD operations with sample invoices and line items
 - [x] Verify database functionality with verification script
 
-## Phase 4: Core API Development ⭐ NEXT
-- [ ] Set up Next.js API routes structure
-- [ ] Implement customer data loading from config
-- [ ] Implement invoice CRUD operations
-- [ ] Create invoice number generation logic (CUST001-YYYY-MM)
-- [ ] Implement invoice status management
-- [ ] Build line items calculation logic (omzet vs hourly)
+## Phase 4: Core API Development ✅ COMPLETED
+- [x] Set up Next.js API routes structure
+- [x] Implement customer data loading from config
+- [x] Implement invoice CRUD operations
+- [x] Create invoice number generation logic (CUST001-YYYY-MM)
+- [x] Implement invoice status management with transition validation
+- [x] Build line items calculation logic (omzet vs hourly)
+- [x] Create comprehensive API endpoints:
+  - `/api/customers` - GET customers from config
+  - `/api/invoices` - GET (with filtering) and POST invoice operations
+  - `/api/invoices/[id]` - GET, PUT, DELETE individual invoices
+  - `/api/invoices/[id]/status` - PUT status management with validation
+  - `/api/invoices/[id]/line-items` - GET and POST line items
+  - `/api/invoices/[id]/line-items/[lineItemId]` - GET, PUT, DELETE individual line items
+- [x] Added comprehensive database client methods for all operations
+- [x] Implemented automatic invoice total recalculation on line item changes
 
-## Phase 5: UI Foundation
+## Phase 5: UI Foundation ⭐ NEXT
 - [ ] Create base layout with Dutch labels
 - [ ] Implement invoice listing page with basic grid
 - [ ] Add filtering by status and customer

@@ -143,14 +143,14 @@ class DatabaseClient {
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         lineItem.id, 
-        lineItem.invoiceId, 
+        lineItem.invoice_id, 
         lineItem.date, 
         lineItem.description || null,
-        lineItem.dailyRevenue || null, 
-        lineItem.compensationPercentage || null, 
-        lineItem.compensationAmount || null,
+        lineItem.daily_revenue || null, 
+        lineItem.compensation_percentage || null, 
+        lineItem.compensation_amount || null,
         lineItem.duration || null, 
-        lineItem.ratePerHour || null, 
+        lineItem.rate_per_hour || null, 
         lineItem.total
       ]
     );
@@ -163,6 +163,42 @@ class DatabaseClient {
       [invoiceId]
     );
     return rows;
+  }
+
+  async getLineItem(lineItemId: string) {
+    const conn = await this.connect();
+    const [rows] = await conn.execute(
+      'SELECT * FROM invoice_line_items WHERE id = ?',
+      [lineItemId]
+    );
+    return (rows as any[])[0] || null;
+  }
+
+  async updateLineItem(lineItemId: string, updates: any) {
+    const conn = await this.connect();
+    const setClause = Object.keys(updates).map(key => `${key} = ?`).join(', ');
+    const values = Object.values(updates);
+    await conn.execute(
+      `UPDATE invoice_line_items SET ${setClause} WHERE id = ?`,
+      [...values, lineItemId]
+    );
+  }
+
+  async deleteLineItem(lineItemId: string) {
+    const conn = await this.connect();
+    await conn.execute(
+      'DELETE FROM invoice_line_items WHERE id = ?',
+      [lineItemId]
+    );
+  }
+
+  async deleteInvoice(invoiceId: string) {
+    const conn = await this.connect();
+    // Line items will be deleted automatically due to ON DELETE CASCADE
+    await conn.execute(
+      'DELETE FROM invoices WHERE id = ?',
+      [invoiceId]
+    );
   }
 }
 
