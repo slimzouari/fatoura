@@ -108,6 +108,18 @@ class DatabaseClient {
     return rows;
   }
 
+  async getInvoiceById(id: string) {
+    const conn = await this.connect();
+    const [rows] = await conn.execute(`
+      SELECT i.*, c.name as customer_name 
+      FROM invoices i 
+      JOIN customers c ON i.customer_id = c.id 
+      WHERE i.id = ?
+    `, [id]);
+    const invoices = rows as any[];
+    return invoices.length > 0 ? invoices[0] : null;
+  }
+
   async createInvoice(invoice: any) {
     const conn = await this.connect();
     
@@ -194,6 +206,10 @@ class DatabaseClient {
       [invoiceId]
     );
     return rows;
+  }
+
+  async getLineItemsByInvoiceId(invoiceId: string) {
+    return this.getLineItems(invoiceId);
   }
 
   async getLineItem(lineItemId: string) {
