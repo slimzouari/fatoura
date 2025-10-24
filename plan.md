@@ -55,15 +55,26 @@
 - [x] Set up placeholder pages for customers and settings sections
 - [x] Implemented responsive design with proper dark mode support
 
-## Phase 6: Invoice Forms & Business Logic ⭐ NEXT
-- [ ] Build invoice creation/edit form
-- [ ] Implement dynamic line items based on customer rules
-- [ ] Create omzet percentage calculation (35%/40%/45%)
-- [ ] Implement hourly rate calculations
-- [ ] Add due date auto-calculation (+30 days)
-- [ ] Build invoice total calculation
+## Phase 6: Invoice Forms & Business Logic ✅ COMPLETED
+- [x] Build invoice creation/edit form with comprehensive field handling
+- [x] Implement dynamic line items based on customer rules (omzet vs hourly)
+- [x] Create omzet percentage calculation (35%/40%/45%) with automatic tier detection
+- [x] Implement hourly rate calculations with duration parsing (hh:mm format)
+- [x] Add due date auto-calculation (+30 days from invoice date)
+- [x] Build invoice total calculation with real-time updates
+- [x] Created comprehensive InvoiceForm component with:
+  - Auto-generated invoice numbers (CUSTOMER_ID-YYYY-MM format)
+  - Dynamic line items with add/remove functionality
+  - Real-time calculations for both omzet and hourly billing
+  - Purchase number optional field with checkbox enable
+  - Extra costs field for additional charges
+  - Comprehensive totals section with subtotal and final total
+  - Form validation and API integration for saving drafts
+  - Responsive design with proper mobile support
+- [x] Integrated with Phase 4 API endpoints for invoice and line item creation
+- [x] Added proper error handling and user feedback
 
-## Phase 7: PDF Generation & Email
+## Phase 7: PDF Generation & Email ⭐ NEXT
 - [ ] Set up Puppeteer for PDF generation
 - [ ] Create basic PDF template (no branding)
 - [ ] Implement PDF file storage and management
@@ -85,6 +96,59 @@
 - [ ] Create sample data for testing
 - [ ] Perform end-to-end testing
 - [ ] Document known limitations and future enhancements
+
+## Phase 10: Number Formatting Enhancement
+**Technical Objective**: Implement proper 2-decimal formatting for all monetary fields
+
+**Technical Depth:**
+- [ ] **Input Formatting**:
+  - Create custom `formatCurrency` utility function
+  - Implement real-time formatting on input (format as user types)
+  - Handle edge cases: empty values, partial inputs, paste operations
+  - Ensure cursor position preservation during formatting
+
+- [ ] **Validation & Parsing**:
+  - Implement `parseCurrency` function to extract numeric values
+  - Add client-side validation for decimal precision (max 2 decimals)
+  - Handle locale-specific decimal separators (. vs ,)
+  - Validate minimum/maximum value constraints
+
+- [ ] **Database Integration**:
+  - Ensure proper storage as DECIMAL(10,2) in MySQL
+  - Implement database-level precision validation
+  - Handle rounding for calculations (avoid floating-point errors)
+  - Create migration script for existing data normalization
+
+- [ ] **UI/UX Enhancements**:
+  - Display formatted values in read-only fields (€1,234.56)
+  - Implement consistent formatting across all monetary displays
+  - Add input masks for better user guidance
+  - Handle copy/paste of formatted values
+
+- [ ] **Calculation Engine**:
+  - Update all calculation functions to use precise decimal arithmetic
+  - Implement proper rounding strategies (banker's rounding)
+  - Ensure totals precision in multi-line calculations
+  - Add validation for calculation overflow/underflow
+
+- [ ] **Form State Management**:
+  - Separate display values from internal numeric values
+  - Implement proper state synchronization
+  - Handle form validation with formatted values
+  - Ensure API payload contains raw numeric values
+
+**Files to modify:**
+- `src/components/InvoiceForm.tsx` - Main form component
+- `src/utils/currency.ts` - New utility for formatting/parsing
+- `src/lib/calculations.ts` - Update calculation logic
+- `src/lib/database.ts` - Ensure proper decimal handling
+- Database schema - Update precision constraints
+
+**Testing Requirements:**
+- Unit tests for currency formatting/parsing functions
+- Integration tests for form submission with formatted values
+- Edge case testing (very large/small numbers, locale differences)
+- Cross-browser compatibility testing
 
 ## Technical Decisions Made:
 1. **Authentication**: None required (single user system)

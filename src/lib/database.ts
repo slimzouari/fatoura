@@ -110,17 +110,48 @@ class DatabaseClient {
 
   async createInvoice(invoice: any) {
     const conn = await this.connect();
+    
+    // Check if invoice number exists and find next available number
+    let baseInvoiceNumber = invoice.invoiceNumber;
+    let finalInvoiceNumber = baseInvoiceNumber;
+    let counter = 1;
+    
+    while (true) {
+      try {
+        // Try to check if this invoice number exists
+        const [existingRows] = await conn.execute(
+          'SELECT id FROM invoices WHERE invoice_number = ?',
+          [finalInvoiceNumber]
+        );
+        
+        if ((existingRows as any[]).length === 0) {
+          // Invoice number doesn't exist, we can use it
+          break;
+        } else {
+          // Invoice number exists, try the next one
+          finalInvoiceNumber = `${baseInvoiceNumber}-${counter}`;
+          counter++;
+        }
+      } catch (error) {
+        // If there's an error checking, just try to insert anyway
+        break;
+      }
+    }
+    
     await conn.execute(
       `INSERT INTO invoices 
        (id, invoice_number, invoice_date, due_date, billing_month, billing_year, 
         purchase_number, extra, total, status, customer_id) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        invoice.id, invoice.invoiceNumber, invoice.invoiceDate, invoice.dueDate,
+        invoice.id, finalInvoiceNumber, invoice.invoiceDate, invoice.dueDate,
         invoice.billingMonth, invoice.billingYear, invoice.purchaseNumber,
         invoice.extra, invoice.total, invoice.status, invoice.customerId
       ]
     );
+    
+    // Return the final invoice number used
+    return { ...invoice, invoiceNumber: finalInvoiceNumber };
   }
 
   async updateInvoice(id: string, updates: any) {

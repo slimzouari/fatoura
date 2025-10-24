@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { InvoiceForm } from '@/components/InvoiceForm';
 
 interface Customer {
   id: string;
@@ -152,36 +153,12 @@ export default function NieuweFactuurPage() {
         </div>
       </div>
 
-      {/* Billing Period Card */}
-      <div className="bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-lg p-6">
-        <h3 className="text-lg font-medium text-green-900 dark:text-green-100 mb-3">
-          Factureringsperiode
-        </h3>
-        <div className="text-lg font-semibold text-green-800 dark:text-green-200">
-          {getMonthName(month!)} {year}
-        </div>
-        <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-          Deze factuur zal worden aangemaakt voor de maand {getMonthName(month!).toLowerCase()} {year}
-        </p>
-      </div>
-
-      {/* Placeholder for Invoice Form */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8">
-        <div className="text-center">
-          <div className="text-gray-400 text-6xl mb-4">📝</div>
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-            Factuurformulier wordt ontwikkeld
-          </h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Het factuurformulier met regelitems en berekeningen wordt in de volgende stap geïmplementeerd.
-          </p>
-          <div className="text-sm text-gray-500 dark:text-gray-400 space-y-1">
-            <p><strong>Geselecteerde klant:</strong> {customer.name} ({customer.id})</p>
-            <p><strong>Factureringsregel:</strong> {customer.rule === 'omzet' ? 'Omzet compensatie' : 'Uurloon'}</p>
-            <p><strong>Maandfacturatie:</strong> {getMonthName(month!)} {year}</p>
-          </div>
-        </div>
-      </div>
+      {/* Invoice Form */}
+      <InvoiceForm
+        customer={customer}
+        billingMonth={parseInt(month!)}
+        billingYear={parseInt(year!)}
+      />
     </div>
   );
 }

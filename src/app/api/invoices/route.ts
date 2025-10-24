@@ -35,9 +35,52 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+
+    // Check if this is the new form-based payload
+    if (body.invoice_number && body.customer_id) {
+      // Handle form-based invoice creation (from InvoiceForm component)
+      const requiredFields = ['invoice_number', 'invoice_date', 'due_date', 'billing_month', 'billing_year', 'customer_id'];
+      for (const field of requiredFields) {
+        if (!body[field]) {
+          return NextResponse.json(
+            { success: false, error: `Missing required field: ${field}` },
+            { status: 400 }
+          );
+        }
+      }
+
+      // Create invoice with form data
+      const invoiceId = generateUniqueId();
+      const invoice = {
+        id: invoiceId,
+        invoiceNumber: body.invoice_number,
+        invoiceDate: body.invoice_date,
+        dueDate: body.due_date,
+        billingMonth: body.billing_month,
+        billingYear: body.billing_year,
+        purchaseNumber: body.purchase_number || null,
+        extra: body.extra || 0,
+        total: body.total || 0,
+        status: body.status || 'draft',
+        customerId: body.customer_id
+      };
+
+      console.log('Creating invoice with data:', invoice);
+      const createdInvoice = await db.createInvoice(invoice);
+
+      return NextResponse.json({
+        success: true,
+        data: { 
+          ...createdInvoice,
+          id: invoiceId
+        }
+      });
+    }
+
+    // Handle legacy payload format
     const { customerId, billingMonth, billingYear, invoiceDate, purchaseNumber, lineItems, extra = 0 } = body;
 
-    // Validate required fields
+    // Validate required fields for legacy format
     if (!customerId || !billingMonth || !billingYear || !invoiceDate || !lineItems?.length) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields' },
@@ -116,7 +159,7 @@ export async function POST(request: NextRequest) {
       customerId
     };
 
-    await db.createInvoice(invoice);
+    const createdInvoice = await db.createInvoice(invoice);
 
     // Create line items
     for (const lineItem of processedLineItems) {
@@ -126,15 +169,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: { 
-        ...invoice, 
+        ...createdInvoice, 
         lineItems: processedLineItems 
       }
     });
 
   } catch (error) {
     console.error('Error creating invoice:', error);
+    console.error('Error details:', error instanceof Error ? error.message : 'Unknown error');
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     return NextResponse.json(
-      { success: false, error: 'Failed to create invoice' },
+      { success: false, error: `Failed to create invoice: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }
     );
   }
