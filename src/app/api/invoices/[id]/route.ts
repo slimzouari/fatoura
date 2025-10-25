@@ -3,14 +3,13 @@ import { db } from '@/lib/database';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const invoiceId = params.id;
+    const { id: invoiceId } = await params;
 
-    // Get invoice details
-    const invoices = await db.getInvoices();
-    const invoice = (invoices as any[]).find(inv => inv.id === invoiceId);
+    // Get invoice details using the dedicated method
+    const invoice = await db.getInvoiceById(invoiceId);
 
     if (!invoice) {
       return NextResponse.json(
@@ -19,16 +18,8 @@ export async function GET(
       );
     }
 
-    // Get line items
-    const lineItems = await db.getLineItems(invoiceId);
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        ...invoice,
-        lineItems
-      }
-    });
+    // Return invoice directly (without wrapper for easier consumption)
+    return NextResponse.json(invoice);
   } catch (error) {
     console.error('Error fetching invoice:', error);
     return NextResponse.json(
@@ -40,10 +31,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const invoiceId = params.id;
+    const { id: invoiceId } = await params;
     const body = await request.json();
     const { status, linkToPdf, ...otherUpdates } = body;
 
@@ -71,15 +62,13 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const invoiceId = params.id;
+    const { id: invoiceId } = await params;
 
-    // Note: Line items will be deleted automatically due to CASCADE constraint
-    const invoices = await db.getInvoices();
-    const invoice = (invoices as any[]).find(inv => inv.id === invoiceId);
-
+    // Check if invoice exists
+    const invoice = await db.getInvoiceById(invoiceId);
     if (!invoice) {
       return NextResponse.json(
         { success: false, error: 'Invoice not found' },
@@ -87,6 +76,7 @@ export async function DELETE(
       );
     }
 
+    // Note: Line items will be deleted automatically due to CASCADE constraint
     // In a real implementation, you'd have a delete method in your database client
     // For now, we'll return a success response
     return NextResponse.json({

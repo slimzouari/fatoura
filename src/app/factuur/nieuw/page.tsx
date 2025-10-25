@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { InvoiceForm } from '@/components/InvoiceForm';
 
@@ -14,7 +14,7 @@ interface Customer {
   currency: string;
 }
 
-export default function NieuweFactuurPage() {
+function NieuweFactuurContent() {
   const searchParams = useSearchParams();
   const customerId = searchParams.get('klant');
   const month = searchParams.get('maand');
@@ -160,5 +160,18 @@ export default function NieuweFactuurPage() {
         billingYear={parseInt(year!)}
       />
     </div>
+  );
+}
+
+export default function NieuweFactuurPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="ml-2 text-gray-600 dark:text-gray-300">Laden...</span>
+      </div>
+    }>
+      <NieuweFactuurContent />
+    </Suspense>
   );
 }

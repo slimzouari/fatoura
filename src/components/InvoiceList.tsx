@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { InvoiceFilters } from './InvoiceFilters';
 import { CustomerSelectionModal } from './CustomerSelectionModal';
 import { MonthYearSelectionModal } from './MonthYearSelectionModal';
@@ -215,9 +216,10 @@ export function InvoiceList() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredInvoices.map((invoice) => (
-            <div
+            <Link
               key={invoice.id}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow cursor-pointer"
+              href={`/factuur/${invoice.id}`}
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow cursor-pointer block"
             >
               <div className="flex items-start justify-between mb-4">
                 <div>
@@ -251,7 +253,7 @@ export function InvoiceList() {
                   </span>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}

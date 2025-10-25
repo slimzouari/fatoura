@@ -3,10 +3,10 @@ import { db } from '@/lib/database';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const invoiceId = params.id;
+    const { id: invoiceId } = await params;
     const body = await request.json();
     const { status } = body;
 

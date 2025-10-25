@@ -2,6 +2,306 @@
 
 import { useState } from 'react';
 
+// Import the same HTML generator used for PDF generation
+function generateInvoiceHTML(data: any): string {
+  const { customer, lineItems } = data;
+  
+  // Format dates
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('nl-NL', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+  
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('nl-NL', {
+      style: 'currency',
+      currency: 'EUR'
+    }).format(amount);
+  };
+  
+  // Calculate subtotal
+  const subtotal = Array.isArray(lineItems) ? lineItems.reduce((sum: number, item: any) => sum + (item.total || 0), 0) : 0;
+  
+  return `
+    <!DOCTYPE html>
+    <html lang="nl">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Factuur ${data.invoiceNumber}</title>
+      <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        
+        body {
+          font-family: 'Helvetica', 'Arial', sans-serif;
+          font-size: 14px;
+          line-height: 1.6;
+          color: #333;
+          background: white;
+          padding: 20px;
+        }
+        
+        .container {
+          max-width: 800px;
+          margin: 0 auto;
+        }
+        
+        .header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 40px;
+          padding-bottom: 20px;
+          border-bottom: 2px solid #2563eb;
+        }
+        
+        .logo-section h1 {
+          color: #2563eb;
+          font-size: 32px;
+          font-weight: bold;
+          margin-bottom: 5px;
+        }
+        
+        .invoice-details {
+          text-align: right;
+        }
+        
+        .invoice-details h2 {
+          color: #374151;
+          font-size: 24px;
+          margin-bottom: 10px;
+        }
+        
+        .info-section {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 30px;
+        }
+        
+        .customer-info, .invoice-info {
+          flex: 1;
+        }
+        
+        .customer-info {
+          margin-right: 40px;
+        }
+        
+        .section-title {
+          font-weight: bold;
+          font-size: 16px;
+          color: #374151;
+          margin-bottom: 10px;
+          border-bottom: 1px solid #e5e7eb;
+          padding-bottom: 5px;
+        }
+        
+        .customer-details, .invoice-details-content {
+          line-height: 1.8;
+        }
+        
+        .line-items {
+          margin: 30px 0;
+        }
+        
+        .items-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 20px;
+        }
+        
+        .items-table th {
+          background-color: #f8fafc;
+          border: 1px solid #e5e7eb;
+          padding: 12px;
+          text-align: left;
+          font-weight: bold;
+          color: #374151;
+        }
+        
+        .items-table td {
+          border: 1px solid #e5e7eb;
+          padding: 10px 12px;
+          vertical-align: top;
+        }
+        
+        .items-table tr:nth-child(even) {
+          background-color: #f9fafb;
+        }
+        
+        .totals {
+          margin-top: 30px;
+          text-align: right;
+        }
+        
+        .totals-table {
+          margin-left: auto;
+          border-collapse: collapse;
+        }
+        
+        .totals-table td {
+          padding: 8px 15px;
+          border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .totals-table .label {
+          font-weight: bold;
+          text-align: right;
+          color: #374151;
+        }
+        
+        .totals-table .amount {
+          text-align: right;
+          min-width: 100px;
+        }
+        
+        .total-row td {
+          border-top: 2px solid #374151;
+          border-bottom: 2px solid #374151;
+          font-weight: bold;
+          font-size: 16px;
+          padding: 12px 15px;
+        }
+        
+        .footer {
+          margin-top: 50px;
+          padding-top: 20px;
+          border-top: 1px solid #e5e7eb;
+          text-align: center;
+          color: #6b7280;
+          font-size: 12px;
+        }
+        
+        .payment-info {
+          margin-top: 30px;
+          padding: 15px;
+          background-color: #f0f9ff;
+          border-left: 4px solid #2563eb;
+        }
+        
+        .payment-info h4 {
+          color: #1e40af;
+          margin-bottom: 10px;
+        }
+        
+        .preview-notice {
+          background: #fef3c7;
+          border: 1px solid #fbbf24;
+          padding: 15px;
+          margin-bottom: 20px;
+          border-radius: 5px;
+          color: #92400e;
+          text-align: center;
+          font-weight: bold;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="preview-notice">
+          🔍 VOORBEELD - Dit is een voorbeeldweergave van de factuur
+        </div>
+        
+        <div class="header">
+          <div class="logo-section">
+            <h1>FACTUUR</h1>
+          </div>
+          <div class="invoice-details">
+            <h2>${data.invoiceNumber}</h2>
+            <div>Factuurdatum: ${formatDate(data.invoiceDate)}</div>
+            <div>Vervaldatum: ${formatDate(data.dueDate)}</div>
+          </div>
+        </div>
+        
+        <div class="info-section">
+          <div class="customer-info">
+            <div class="section-title">Facturatie gegevens</div>
+            <div class="customer-details">
+              <strong>${customer.name}</strong><br>
+              ${customer.address || ''}<br>
+              ${customer.zipCode || ''} ${customer.city || ''}<br>
+              ${customer.email}
+            </div>
+          </div>
+          
+          <div class="invoice-info">
+            <div class="section-title">Factuur gegevens</div>
+            <div class="invoice-details-content">
+              <strong>Periode:</strong> ${data.billingMonth}/${data.billingYear}<br>
+              ${data.purchaseNumber ? `<strong>Inkoop nummer:</strong> ${data.purchaseNumber}<br>` : ''}
+              <strong>Betalingstermijn:</strong> 30 dagen
+            </div>
+          </div>
+        </div>
+        
+        <div class="line-items">
+          <div class="section-title">Factuurregels</div>
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>Datum</th>
+                ${customer.rule === 'hourly' 
+                  ? '<th>Beschrijving</th><th>Duur</th><th>Tarief</th>' 
+                  : '<th>Dag omzet</th><th>Percentage</th><th>Vergoeding</th>'
+                }
+                <th style="text-align: right;">Bedrag</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${lineItems.map((item: any) => `
+                <tr>
+                  <td>${formatDate(item.date)}</td>
+                  ${customer.rule === 'hourly' 
+                    ? `<td>${item.description || ''}</td><td>${item.duration || ''}</td><td>${formatCurrency(item.ratePerHour || 0)}</td>`
+                    : `<td>${formatCurrency(item.dailyRevenue || 0)}</td><td>${item.compensationPercentage || 0}%</td><td>${formatCurrency(item.compensationAmount || 0)}</td>`
+                  }
+                  <td style="text-align: right;">${formatCurrency(item.total || 0)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="totals">
+          <table class="totals-table">
+            <tr>
+              <td class="label">Subtotaal:</td>
+              <td class="amount">${formatCurrency(subtotal)}</td>
+            </tr>
+            ${data.extra > 0 ? `
+            <tr>
+              <td class="label">Bonus:</td>
+              <td class="amount">${formatCurrency(data.extra)}</td>
+            </tr>` : ''}
+            <tr class="total-row">
+              <td class="label">Totaal:</td>
+              <td class="amount">${formatCurrency(data.total)}</td>
+            </tr>
+          </table>
+        </div>
+        
+        <div class="payment-info">
+          <h4>Betalingsinformatie</h4>
+          <p>Gelieve het factuurbedrag binnen ${formatDate(data.dueDate)} over te maken.</p>
+        </div>
+        
+        <div class="footer">
+          <p>Gegenereerd op ${formatDate(new Date().toISOString())}</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
 interface InvoiceFormProps {
   customer: {
     id: string;
@@ -13,6 +313,14 @@ interface InvoiceFormProps {
   };
   billingMonth: number;
   billingYear: number;
+  existingInvoice?: {
+    id: string;
+    invoiceNumber: string;
+    invoiceDate: string;
+    purchaseNumber: string;
+    extra: number;
+    lineItems: LineItem[];
+  };
 }
 
 interface LineItem {
@@ -29,20 +337,21 @@ interface LineItem {
   total: number;
 }
 
-export function InvoiceForm({ customer, billingMonth, billingYear }: InvoiceFormProps) {
+export function InvoiceForm({ customer, billingMonth, billingYear, existingInvoice }: InvoiceFormProps) {
   // Generate invoice number (CUSTOMER_ID-YYYY-MM)
   const generateInvoiceNumber = () => {
     const monthStr = billingMonth.toString().padStart(2, '0');
     return `${customer.id}-${billingYear}-${monthStr}`;
   };
 
-  const [invoiceNumber, setInvoiceNumber] = useState(generateInvoiceNumber());
-  const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().split('T')[0]);
-  const [purchaseNumber, setPurchaseNumber] = useState('');
-  const [purchaseNumberEnabled, setPurchaseNumberEnabled] = useState(false);
-  const [extra, setExtra] = useState(0);
-  const [lineItems, setLineItems] = useState<LineItem[]>([]);
+  const [invoiceNumber, setInvoiceNumber] = useState(existingInvoice?.invoiceNumber || generateInvoiceNumber());
+  const [invoiceDate, setInvoiceDate] = useState(existingInvoice?.invoiceDate || new Date().toISOString().split('T')[0]);
+  const [purchaseNumber, setPurchaseNumber] = useState(existingInvoice?.purchaseNumber || '');
+  const [purchaseNumberEnabled, setPurchaseNumberEnabled] = useState(!!existingInvoice?.purchaseNumber);
+  const [extra, setExtra] = useState(existingInvoice?.extra || 0);
+  const [lineItems, setLineItems] = useState<LineItem[]>(existingInvoice?.lineItems || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
 
   // Calculate due date (invoice date + 30 days)
   const calculateDueDate = (invoiceDate: string) => {
@@ -53,9 +362,9 @@ export function InvoiceForm({ customer, billingMonth, billingYear }: InvoiceForm
 
   const dueDate = calculateDueDate(invoiceDate);
 
-  // Calculate totals
-  const subtotal = lineItems.reduce((sum, item) => sum + item.total, 0);
-  const totalAmount = subtotal + extra;
+    // Calculate totals
+  const subtotal = lineItems.reduce((sum, item) => sum + parseFloat(item.total?.toString() || '0'), 0);
+  const totalAmount = subtotal + parseFloat(extra?.toString() || '0');
 
   const addLineItem = () => {
     const newItem: LineItem = {
@@ -151,7 +460,7 @@ export function InvoiceForm({ customer, billingMonth, billingYear }: InvoiceForm
         for (const item of lineItems) {
           const lineItemData = {
             date: item.date,
-            description: item.description || null,
+            description: item.description || 'Factuur regel', // Ensure description is never null
             daily_revenue: item.daily_revenue || null,
             compensation_percentage: item.compensation_percentage || null,
             compensation_amount: item.compensation_amount || null,
@@ -159,13 +468,20 @@ export function InvoiceForm({ customer, billingMonth, billingYear }: InvoiceForm
             rate_per_hour: item.rate_per_hour || null,
           };
 
-          await fetch(`/api/invoices/${invoiceId}/line-items`, {
+          const lineItemResponse = await fetch(`/api/invoices/${invoiceId}/line-items`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(lineItemData),
           });
+
+          const lineItemResult = await lineItemResponse.json();
+          if (!lineItemResult.success) {
+            console.error('Error creating line item:', lineItemResult.error);
+            alert('Fout bij opslaan van factuur regel: ' + lineItemResult.error);
+            return; // Stop processing if any line item fails
+          }
         }
 
         // Navigate back to list
@@ -182,13 +498,13 @@ export function InvoiceForm({ customer, billingMonth, billingYear }: InvoiceForm
     }
   };
 
-  const handlePreview = () => {
-    // TODO: Generate PDF preview
-    console.log('Opening preview...', {
-      invoiceNumber,
-      totalAmount,
-      lineItems
-    });
+  const handlePreview = async () => {
+    if (lineItems.length === 0) {
+      alert('Voeg minimaal één factuurregel toe voordat je een voorbeeld bekijkt.');
+      return;
+    }
+
+    setShowPreviewModal(true);
   };
 
   const getMonthName = (month: number) => {
@@ -411,7 +727,7 @@ export function InvoiceForm({ customer, billingMonth, billingYear }: InvoiceForm
                         </label>
                         <input
                           type="text"
-                          value={`€${item.total.toFixed(2)}`}
+                          value={`€${parseFloat(item.total?.toString() || '0').toFixed(2)}`}
                           disabled
                           className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-medium"
                         />
@@ -450,7 +766,7 @@ export function InvoiceForm({ customer, billingMonth, billingYear }: InvoiceForm
                         </label>
                         <input
                           type="text"
-                          value={`€${(item.compensation_amount || 0).toFixed(2)}`}
+                          value={`€${parseFloat(item.compensation_amount?.toString() || '0').toFixed(2)}`}
                           disabled
                           className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
                         />
@@ -473,7 +789,7 @@ export function InvoiceForm({ customer, billingMonth, billingYear }: InvoiceForm
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Extra kosten (€)
+              Bonus (€)
             </label>
             <input
               type="number"
@@ -495,7 +811,7 @@ export function InvoiceForm({ customer, billingMonth, billingYear }: InvoiceForm
               <span className="text-gray-900 dark:text-white">€{subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600 dark:text-gray-400">Extra kosten:</span>
+              <span className="text-gray-600 dark:text-gray-400">Bonus:</span>
               <span className="text-gray-900 dark:text-white">€{extra.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-lg font-semibold">
@@ -524,6 +840,78 @@ export function InvoiceForm({ customer, billingMonth, billingYear }: InvoiceForm
           Voorbeeld bekijken
         </button>
       </div>
+      
+      {/* Preview Modal */}
+      {showPreviewModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Background overlay */}
+          <div 
+            className="absolute inset-0 bg-black bg-opacity-50"
+            onClick={() => setShowPreviewModal(false)}
+          ></div>
+          
+          {/* Modal content */}
+          <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            {/* Header */}
+            <div className="flex justify-between items-center p-6 border-b">
+              <h3 className="text-lg font-medium text-gray-900">
+                Factuur Voorbeeld - {invoiceNumber}
+              </h3>
+              <button
+                onClick={() => setShowPreviewModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            {/* Content */}
+            <div className="p-6 overflow-y-auto max-h-[70vh]">
+              <div 
+                dangerouslySetInnerHTML={{
+                  __html: generateInvoiceHTML({
+                    invoiceNumber,
+                    invoiceDate,
+                    dueDate,
+                    billingMonth,
+                    billingYear,
+                    purchaseNumber: purchaseNumberEnabled ? purchaseNumber : '',
+                    extra: parseFloat(extra?.toString() || '0'),
+                    total: totalAmount,
+                    customer: {
+                      ...customer,
+                      address: customer.address || '',
+                      zipCode: '',
+                      city: ''
+                    },
+                    lineItems: lineItems.map(item => ({
+                      ...item,
+                      date: item.date,
+                      daily_revenue: item.daily_revenue,
+                      compensation_percentage: item.compensation_percentage,
+                      compensation_amount: item.compensation_amount,
+                      rate_per_hour: item.rate_per_hour,
+                      total: parseFloat(item.total?.toString() || '0')
+                    }))
+                  })
+                }}
+              />
+            </div>
+            
+            {/* Footer */}
+            <div className="flex justify-end p-6 border-t bg-gray-50">
+              <button
+                onClick={() => setShowPreviewModal(false)}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Sluiten
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

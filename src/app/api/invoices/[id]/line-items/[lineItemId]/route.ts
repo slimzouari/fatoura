@@ -3,10 +3,10 @@ import { db } from '@/lib/database';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string, lineItemId: string } }
+  { params }: { params: Promise<{ id: string, lineItemId: string }> }
 ) {
   try {
-    const { id: invoiceId, lineItemId } = params;
+    const { id: invoiceId, lineItemId } = await params;
 
     const lineItem = await db.getLineItem(lineItemId);
 
@@ -32,10 +32,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string, lineItemId: string } }
+  { params }: { params: Promise<{ id: string, lineItemId: string }> }
 ) {
   try {
-    const { id: invoiceId, lineItemId } = params;
+    const { id: invoiceId, lineItemId } = await params;
     const body = await request.json();
 
     // Validate required fields
@@ -130,10 +130,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string, lineItemId: string } }
+  { params }: { params: Promise<{ id: string, lineItemId: string }> }
 ) {
   try {
-    const { id: invoiceId, lineItemId } = params;
+    const { id: invoiceId, lineItemId } = await params;
 
     // Check if line item exists and belongs to this invoice
     const lineItem = await db.getLineItem(lineItemId);

@@ -103,7 +103,7 @@ function generateInvoiceHTML(data: InvoiceData): string {
   };
   
   // Calculate subtotal
-  const subtotal = lineItems.reduce((sum, item) => sum + item.total, 0);
+  const subtotal = Array.isArray(lineItems) ? lineItems.reduce((sum, item) => sum + (item.total || 0), 0) : 0;
   
   return `
     <!DOCTYPE html>
@@ -317,7 +317,7 @@ function generateInvoiceHTML(data: InvoiceData): string {
             </tr>
             ${data.extra > 0 ? `
               <tr>
-                <td class="total-label">Extra kosten:</td>
+                <td class="total-label">Bonus:</td>
                 <td class="total-amount">${formatCurrency(data.extra)}</td>
               </tr>
             ` : ''}

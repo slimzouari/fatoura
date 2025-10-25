@@ -4,10 +4,10 @@ import { generateUniqueId } from '@/lib/utils';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const invoiceId = params.id;
+    const { id: invoiceId } = await params;
     const lineItems = await db.getLineItems(invoiceId);
 
     return NextResponse.json({
@@ -31,16 +31,8 @@ export async function POST(
     const { id: invoiceId } = await params;
     const body = await request.json();
 
-    // Validate required fields
-    const requiredFields = ['description'];
-    for (const field of requiredFields) {
-      if (!body[field]) {
-        return NextResponse.json(
-          { success: false, error: `Missing required field: ${field}` },
-          { status: 400 }
-        );
-      }
-    }
+    // Validate required fields - description is optional and will be auto-generated if missing
+    // No required fields for line items as they can be minimal
 
     // Get invoice and customer details for calculation
     const invoices = await db.getInvoices();
@@ -69,7 +61,7 @@ export async function POST(
       id: generateUniqueId(),
       invoice_id: invoiceId,
       date: body.date || new Date().toISOString().split('T')[0],
-      description: body.description
+      description: body.description || 'Factuur regel'
     };
 
     if (customer.rule === 'hourly') {
@@ -102,10 +94,16 @@ export async function POST(
 
     // Recalculate invoice totals
     const allLineItems = await db.getLineItems(invoiceId);
-    const totalAmount = (allLineItems as any[]).reduce((sum, item) => sum + item.total, 0);
+    const lineItemsTotal = (allLineItems as any[]).reduce((sum, item) => {
+      const itemTotal = parseFloat(item.total) || 0;
+      return sum + itemTotal;
+    }, 0);
+
+    // Include extra costs in the total
+    const finalTotal = lineItemsTotal + parseFloat(invoice.extra || 0);
 
     await db.updateInvoice(invoiceId, {
-      total: totalAmount
+      total: finalTotal
     });
 
     return NextResponse.json({
@@ -114,8 +112,10 @@ export async function POST(
     }, { status: 201 });
   } catch (error) {
     console.error('Error creating line item:', error);
+    console.error('Error details:', error instanceof Error ? error.message : 'Unknown error');
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     return NextResponse.json(
-      { success: false, error: 'Failed to create line item' },
+      { success: false, error: 'Failed to create line item', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
